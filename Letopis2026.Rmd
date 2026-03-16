@@ -1,11 +1,50 @@
 ---
-title: "Letopis2026"
-output: word_document
-date: "2026-03-15"
+title: "Экология гидроидного полипа Halitholus cirratus"
+author: "Я. А. Манылова"
+output: 
+      word_document:
+                reference_docx: Letopis_template.docx
+                fig_width: 5
+                fig_height: 5
+
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(reshape2)
+library(knitr)
+library(pander)
+library(ggplot2)
+library(cowplot)
+library(readxl)
+library(flextable)
+library(dplyr)
+library(tidyverse)
+```
+
+```{r}
+meas <- read_xlsx(file.choose(), sheet = "live")
+meas$cond1 <- NA
+meas$cond1[meas$cond == "l"] <- 0
+port <- meas%>%filter(type == "port", cond1 == "0") %>% arrange(length)
+port <- port[, c("label", "length", "hydr", "nP")]
+```
+
+```{r}
+#установка параметров грид в таблице
+library(officer)
+std_border = fp_border(color="gray", width = 1)
+colname <- c("номер пробы", "длина", "наличие гидроризы", "количество полипов")
+
+port %>% 
+  flextable() %>% 
+  fontsize(part = "all") %>% 
+   border_inner_h(border = std_border ) %>% 
+  border_inner_v(border = std_border ) %>% 
+  fontsize(size = 8, part = "all") %>% 
+  set_header_labels(values = colname) %>% 
+  colformat_double(j = 1,  big.mark = "", digits = 0) %>% 
+  set_caption("Таблица +.1  Размерная структура Portlandia arctica, частота встречаемости и количество полипов Halitholus cirratus")
 ```
 
 ## R Markdown
