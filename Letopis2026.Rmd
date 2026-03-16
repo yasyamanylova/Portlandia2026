@@ -62,7 +62,9 @@ theme_set(theme_bw())
 
 ```{r echo=FALSE}
 #создем дата фрейм с данными по длине и количеству полипов
-meas <- read_xlsx(file.choose(), sheet = "live")
+# meas <- read_xlsx(file.choose(), sheet = "live")
+ # Чтобы эта строчка работала, надо выложить отдельные листы этого файла в виде csv и сделать скопировать url ссылку по таком образу и подобию:
+# data_OP <- read_delim("https://raw.githubusercontent.com/Amauropsis/OnegaBenthos25/refs/heads/main/OP_NB.csv", delim = ";")
 meas$cond1 <- NA
 meas$cond1[meas$cond == "l"] <- 0
 port <- meas%>%filter(type == "port", cond1 == "0") %>% arrange(length)
