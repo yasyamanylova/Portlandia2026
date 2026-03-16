@@ -1,16 +1,17 @@
 ---
 title: "Экология гидроидного полипа Halitholus cirratus"
 author: "Я. А. Манылова"
-output: 
-      word_document:
-                reference_docx: Letopis_template.docx
-                fig_width: 5
-                fig_height: 5
-
+output:
+  html_document:
+    df_print: paged
+  word_document:
+    reference_docx: Letopis_template.docx
+    fig_width: 5
+    fig_height: 5
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 library(reshape2)
 library(knitr)
 library(pander)
@@ -20,9 +21,44 @@ library(readxl)
 library(flextable)
 library(dplyr)
 library(tidyverse)
+library(scales)
+# Функция, задающая нумерацию рисунков
+
+figRef <- local({
+    tag <- numeric()
+    created <- logical()
+    used <- logical()
+    function(label, caption, prefix = options("figcap.prefix"), 
+        sep = options("figcap.sep"), prefix.highlight = options("figcap.prefix.highlight")) {
+        i <- which(names(tag) == label)
+        if (length(i) == 0) {
+            i <- length(tag) + 1
+            tag <<- c(tag, i)
+            names(tag)[length(tag)] <<- label
+            used <<- c(used, FALSE)
+            names(used)[length(used)] <<- label
+            created <<- c(created, FALSE)
+            names(created)[length(created)] <<- label
+        }
+        if (!missing(caption)) {
+            created[label] <<- TRUE
+            paste0(prefix.highlight, prefix, " ", i, sep, prefix.highlight, 
+                " ", caption)
+        } else {
+            used[label] <<- TRUE
+            paste(prefix, tag[label])
+        }
+    }
+})
+
+options(figcap.prefix = "Рисунок", figcap.sep = ".", figcap.prefix.highlight = "**")
+
+
+theme_set(theme_bw())
 ```
 
-```{r}
+```{r echo=FALSE}
+#создем дата фрейм с данными по длине и количеству полипов
 meas <- read_xlsx(file.choose(), sheet = "live")
 meas$cond1 <- NA
 meas$cond1[meas$cond == "l"] <- 0
@@ -30,12 +66,35 @@ port <- meas%>%filter(type == "port", cond1 == "0") %>% arrange(length)
 port <- port[, c("label", "length", "hydr", "nP")]
 ```
 
-```{r}
+```{r flextable_setup, echo=FALSE}
+library(flextable)
+
+# Глобальная настройка размера шрифта для заголовков
+set_flextable_defaults(
+  font.size = 8,           # базовый размер шрифта
+  font.size.title = 10,     # размер шрифта для заголовков таблицы (если используется add_header_lines)
+  font.size.subtitle = 9,  # размер для подзаголовков
+  font.size.footer = 9,     # размер для нижнего колонтитула
+  font.size.header = 10,    # размер для заголовков колонок
+  font.size.body = 8,       # размер для тела таблицы
+  font.size.caption = 10
+  )
+```
+
+```{r include=FALSE}
 #установка параметров грид в таблице
 library(officer)
 std_border = fp_border(color="gray", width = 1)
 colname <- c("номер пробы", "длина", "наличие гидроризы", "количество полипов")
+```
 
+Halitholus cirratus (Hartlaub, 1914) – вид гидроидных полипов, ранее описанный как Perigonimus yoldiaearcticae (Birula, 1897) (Stepanjants, Svoboda, 2013), часто встречается на раковинах двустворчатых моллюсков в Белом море. Одним из видов, выступающих в качестве субстрата для H. cirratus, является двустворчатый моллюск Portlandia arctica (Gray, 1824). В предыдущих исследованиях было показано, что между колонией гидроида и моллюском-субстратом формируется тесная связь (Нинбург, 1975). Заражение гидроидными полипами в отдельных местообитаниях на Белом море может значительно превышать 50% (Нинбург, 1975; Ипатов, 1985). Однако данные по встречаемости H. cirratus в поселениях портландии в вершине Кандалакшского залива отсутствуют. 
+В 2023 году на территории Кандалакшского государственного заповедника мы взяли серию проб в Фукусовой губе острова Ряжков. Для сбора использовали шлюпочную драгу, все пробы были взяты с глубины от 11 до 14 метров. Пробы промывали через сито с диаметром ячеи 1 мм. В ходе дальнейшей разборки мы выбирали из проб всех живых моллюсков Portlandia arctica. У всех обнаруженных живых особей P. arctica мы измеряли длину при помощи окуляр-микрометра с точностью до 0.1 мм, отмечали наличие гидроидных полипов Halitholus cirratus на раковинах портландий. Для всех особей, зараженных полипами, подсчитывалось количество гидрантов. В ряде случаев моллюски не несли на себе полипов, в таком случае отмечалось наличие гидроризы — структуры из хитина (Rees, 1938), с помощью которой полипы прикреплялись к базибионту.
+Всего было изучено 207 моллюсков. На 100 живых портландиях из 207 мы обнаружили колонии полипов Halitholus cirratus. Средняя зараженность в 4 драгировках составила 61.78±24.6%. В 2 из 6 проб не было найдено ни портландий, ни их створок, поэтому среднюю зараженность мы оценивали только по 4 драгировкам. Количество особей с гидрантами в разных пробах значительно различалось: В одной из драгировок все обнаруженные моллюски несли на себе полипов, однако это проба содержала в себе всего 8 живых особей Portlandia arctica. Большинство незараженных особей были размером до 5 мм, а крупные моллюски, напротив, чаще несли на себе гидранта (рис. 3). Эти данные согласуются данными предыдущих исследований, где так же отмечался рост зараженности по мере роста моллюска (Нинбург, 1975; Ипатов, 1985).
+
+
+```{r echo=FALSE}
+#таблица по длине и количеству полипов
 port %>% 
   flextable() %>% 
   fontsize(part = "all") %>% 
@@ -47,22 +106,12 @@ port %>%
   set_caption("Таблица +.1  Размерная структура Portlandia arctica, частота встречаемости и количество полипов Halitholus cirratus")
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r echo=FALSE, fig.cap=figRef("port", "Количество живых моллюсков в разных размерных классах.")}
+#размерная структура портландии
+hystogram <-  port %>% ggplot(aes(x = length, fill = as.factor(hydr))) + geom_histogram(binwidth = 1, position = "dodge") + theme_classic() + scale_color_hue(name = "Гидрориза", labels = c("нет", "есть ")) + scale_fill_hue(name = "Гидрориза", labels = c("нет", "есть")) + xlab("длина, см") + ylab("количество особей") + theme(text=element_text(size=14))
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+hystogram
 
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
